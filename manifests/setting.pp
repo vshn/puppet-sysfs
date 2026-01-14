@@ -23,29 +23,25 @@
 # Copyright 2017 David Gubler, VSHN AG
 #
 define sysfs::setting (
-  $ensure = 'present',
-  $value = undef,
-  $settings = {},
+  Enum['present']  $ensure = 'present',
+  Optional[String] $value = undef,
+  Hash             $settings = {},
 ) {
-  validate_re($name, '^[a-z0-9A-Z_]+(/[a-z0-9A-Z_]+)+$', 'sysfs setting must be slash-separated')
+  assert_type(Pattern['^[a-z0-9A-Z_]+(/[a-z0-9A-Z_]+)+$'], $title)
   $_base_dir = '/etc/sysfs.d'
 
-  if ( $value ) {
-    $_value = $value
-  } else {
-    $_value = $settings[$value]
-  }
+  $_value = pick_default($value, $settings[$value], undef)
 
   include sysfs
 
-  $_dotted = regsubst($name, '/', '.', 'G')
+  $_dotted = regsubst($title, '/', '.', 'G')
   
   file { "${_base_dir}/${_dotted}.conf":
     ensure => $ensure,
     owner => 'root',
     group => 'root',
     mode  => '0644',
-    content => "# Managed by Puppet\n${name} = ${_value}\n",
+    content => "# Managed by Puppet\n${title} = ${_value}\n",
     notify => Exec['sysfsutils-reload'],
   }
 }

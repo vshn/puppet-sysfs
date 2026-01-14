@@ -22,9 +22,8 @@
 # Copyright 2017 David Gubler, VSHN AG
 #
 class sysfs (
-  $settings = {},
+  Hash $settings = {},
 ) {
-  validate_hash($settings)
   $_base_dir = '/etc/sysfs.d'
   ensure_packages(['sysfsutils'])
   file { $_base_dir:
